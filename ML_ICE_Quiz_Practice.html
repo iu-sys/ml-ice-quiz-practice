@@ -1,0 +1,1831 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ML ICE Quiz Practice</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --ink: #151922;
+      --muted: #626b7a;
+      --line: #dfe4ed;
+      --panel: #ffffff;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --accent-soft: #e8efff;
+      --good: #0f8a5f;
+      --good-soft: #e6f6ee;
+      --bad: #c43d3d;
+      --bad-soft: #fdeaea;
+      --warn: #8b6b00;
+      --warn-soft: #fff6d8;
+      --shadow: 0 20px 55px rgba(24, 31, 50, .08);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(120deg, rgba(37, 99, 235, .08), transparent 36%),
+        linear-gradient(180deg, #fff 0, var(--bg) 36%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+    }
+
+    aside {
+      min-height: 100vh;
+      padding: 26px 18px;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, .82);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      align-self: start;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      box-shadow: 0 10px 24px rgba(21, 25, 34, .18);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.1;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .side-section {
+      margin-top: 22px;
+    }
+
+    .side-title {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .mode-grid,
+    .topic-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .mode-btn,
+    .topic-btn,
+    .action-btn,
+    .ghost-btn {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease, box-shadow .15s ease;
+    }
+
+    .mode-btn,
+    .topic-btn {
+      width: 100%;
+      text-align: left;
+      padding: 11px 12px;
+    }
+
+    .mode-btn:hover,
+    .topic-btn:hover,
+    .action-btn:hover,
+    .ghost-btn:hover {
+      transform: translateY(-1px);
+      border-color: #b8c4d8;
+      box-shadow: 0 10px 22px rgba(24, 31, 50, .06);
+    }
+
+    .mode-btn.active,
+    .topic-btn.active {
+      background: var(--accent-soft);
+      border-color: #a7bbff;
+      color: var(--accent-dark);
+      box-shadow: none;
+    }
+
+    .topic-btn.priority {
+      border-color: #f0d267;
+      background: #fffaf0;
+    }
+
+    .topic-btn.active.priority {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .topic-name {
+      display: block;
+      font-size: 14px;
+      font-weight: 750;
+      line-height: 1.25;
+    }
+
+    .topic-meta {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    main {
+      min-width: 0;
+      padding: 34px;
+    }
+
+    .topbar {
+      max-width: 1080px;
+      margin: 0 auto 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .page-title h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.02;
+      font-weight: 850;
+    }
+
+    .page-title p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 650px;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .score-panel {
+      min-width: 190px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .8);
+      box-shadow: var(--shadow);
+    }
+
+    .score-value {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 850;
+    }
+
+    .score-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .layout {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .question-card,
+    .notes-panel,
+    .review-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .question-card {
+      overflow: hidden;
+    }
+
+    .question-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 19px 21px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcff;
+    }
+
+    .progress-text {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .topic-tag {
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .question-body {
+      padding: 24px 24px 22px;
+    }
+
+    .question-text {
+      margin: 0 0 18px;
+      font-size: 21px;
+      line-height: 1.45;
+      font-weight: 760;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 12px 0 18px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: #111827;
+      color: #e5e7eb;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .answers {
+      display: grid;
+      gap: 10px;
+    }
+
+    .answer-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 13px 14px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      line-height: 1.45;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+
+    .answer-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: #aebbd1;
+      background: #fbfcff;
+    }
+
+    .answer-btn.selected {
+      border-color: #7b99e8;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      font-weight: 750;
+    }
+
+    .answer-btn:disabled {
+      cursor: default;
+    }
+
+    .answer-btn.correct {
+      border-color: rgba(15, 138, 95, .4);
+      background: var(--good-soft);
+      color: var(--good);
+      font-weight: 750;
+    }
+
+    .answer-btn.wrong {
+      border-color: rgba(196, 61, 61, .45);
+      background: var(--bad-soft);
+      color: var(--bad);
+      font-weight: 750;
+    }
+
+    .feedback {
+      margin-top: 16px;
+      padding: 14px 15px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      display: none;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.good {
+      border-color: rgba(15, 138, 95, .25);
+      background: var(--good-soft);
+    }
+
+    .feedback.bad {
+      border-color: rgba(196, 61, 61, .25);
+      background: var(--bad-soft);
+    }
+
+    .card-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 18px 24px 24px;
+    }
+
+    .action-btn,
+    .ghost-btn {
+      min-height: 42px;
+      padding: 0 15px;
+      font-weight: 800;
+    }
+
+    .action-btn {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .action-btn:hover {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+    }
+
+    .action-btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .notes-panel,
+    .review-panel {
+      padding: 18px;
+    }
+
+    .notes-panel h3,
+    .review-panel h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .note-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .missed-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .missed-item {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfcff;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .mini-stat {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px;
+      background: #fbfcff;
+    }
+
+    .mini-stat strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .mini-stat span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        min-height: 0;
+        position: static;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .topic-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      main {
+        padding: 24px 16px;
+      }
+
+      .topbar,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        display: grid;
+      }
+
+      .score-panel {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 560px) {
+      aside {
+        padding: 20px 14px;
+      }
+
+      .topic-list {
+        grid-template-columns: 1fr;
+      }
+
+      .question-head,
+      .card-actions {
+        flex-direction: column;
+      }
+
+      .question-text {
+        font-size: 18px;
+      }
+
+      .mini-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">ML</div>
+        <div>
+          <h1>ML ICE Practice</h1>
+          <p class="subtitle">每週 Quiz 刷題站</p>
+        </div>
+      </div>
+
+      <section class="side-section">
+        <p class="side-title">模式</p>
+        <div class="mode-grid">
+          <button class="mode-btn active" data-mode="all">全部混合</button>
+          <button class="mode-btn" data-mode="priority">考前重點</button>
+          <button class="mode-btn" data-mode="missed">只刷錯題</button>
+        </div>
+      </section>
+
+      <section class="side-section">
+        <p class="side-title">每週 Quiz</p>
+        <div class="topic-list" id="topicList"></div>
+      </section>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="page-title">
+          <h2 id="pageTitle">全部混合練習</h2>
+          <p id="pageSubtitle">照 Quiz 考點刷題，答錯會自動加入錯題回顧。先把 Clustering、Perceptron、NCC 練熟，分數會上得很快。</p>
+        </div>
+        <div class="score-panel">
+          <div class="score-value" id="scoreValue">0/0</div>
+          <div class="score-label">目前答對</div>
+          <div class="mini-stats">
+            <div class="mini-stat"><strong id="doneCount">0</strong><span>已答</span></div>
+            <div class="mini-stat"><strong id="leftCount">0</strong><span>剩下</span></div>
+            <div class="mini-stat"><strong id="missedCount">0</strong><span>錯題</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <section class="question-card">
+          <div class="question-head">
+            <div class="progress-text" id="progressText">題目 1</div>
+            <div class="topic-tag" id="topicTag">Python Intro</div>
+          </div>
+          <div class="question-body">
+            <p class="question-text" id="questionText"></p>
+            <pre id="questionCode"></pre>
+            <div class="answers" id="answers"></div>
+            <div class="feedback" id="feedback"></div>
+          </div>
+          <div class="card-actions">
+            <button class="ghost-btn" id="restartBtn">重新開始</button>
+            <button class="action-btn" id="nextBtn" disabled>下一題</button>
+          </div>
+        </section>
+
+        <div class="side-stack">
+          <section class="notes-panel">
+            <h3 id="noteTitle">本週速記</h3>
+            <ul class="note-list" id="noteList"></ul>
+          </section>
+
+          <section class="review-panel">
+            <h3>錯題回顧</h3>
+            <div class="missed-list" id="missedList">
+              <p class="empty">目前沒有錯題。答錯後會出現在這裡。</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const topics = [
+      {
+        id: "python",
+        name: "Python Intro",
+        week: "16 Apr - 22 Apr",
+        notes: [
+          "list mutable；tuple immutable；dict 用 key 取值。",
+          "append 會改原物件；+ 通常產生新 list。",
+          "slice 結尾不包含 stop index，例如 L[:2] 只取前兩個。"
+        ]
+      },
+      {
+        id: "matrix",
+        name: "Vector / Matrix",
+        week: "23 Apr - 29 Apr",
+        notes: [
+          "向量 normalization：v / sqrt(v @ v)。",
+          "X @ w 是每一列和 w 做 dot product。",
+          "np.linalg.norm(X - x, axis=1) 可算每一列到 x 的距離。"
+        ]
+      },
+      {
+        id: "ncc",
+        name: "NCC + Linear Classification",
+        week: "30 Apr - 6 May",
+        priority: true,
+        notes: [
+          "NCC 用每個 class 的 centroid / mean vector 分類。",
+          "class mean 寫法：X[y == label, :].mean(axis=0)。",
+          "NCC 的 binary decision boundary 和兩個 centroid 差向量垂直。"
+        ]
+      },
+      {
+        id: "knn",
+        name: "KNN",
+        week: "7 May - 13 May",
+        notes: [
+          "KNN 沒有真正 training phase，model 就是資料。",
+          "k 越大，decision boundary 通常越平滑。",
+          "nearest index：np.linalg.norm(X - x, axis=1).argsort()[:k]。"
+        ]
+      },
+      {
+        id: "feature",
+        name: "Feature Extraction",
+        week: "28 May - 3 Jun",
+        notes: [
+          "n-gram 是長度 n 的 token sequence count。",
+          "文字 bag-of-words / n-gram feature 通常很 sparse。",
+          "Pipeline = feature extractor + model，也要調 extractor hyperparameters。"
+        ]
+      },
+      {
+        id: "eval",
+        name: "Model Evaluation",
+        week: "4 Jun - 10 Jun",
+        notes: [
+          "固定 hyperparameters 至少要 train/test 兩個 split。",
+          "Precision = TP / (TP + FP)，不等於 accuracy。",
+          "Imbalanced data 只看 accuracy 很容易誤判。"
+        ]
+      },
+      {
+        id: "cluster",
+        name: "Clustering",
+        week: "11 Jun - 17 Jun",
+        priority: true,
+        notes: [
+          "Clustering 是 unsupervised，沒有 labels。",
+          "K-Means 重複 assignment step 和 update centroid step。",
+          "K-Means 對 initialization、outliers、feature scaling 敏感。"
+        ]
+      },
+      {
+        id: "perceptron",
+        name: "Perceptron",
+        week: "18 Jun - 24 Jun",
+        priority: true,
+        notes: [
+          "Perceptron 是 supervised binary linear classifier。",
+          "prediction：sign(w @ x + b)。",
+          "分錯時更新：w = w + lr * y * x，b = b + lr * y。"
+        ]
+      }
+    ];
+
+    const questions = [
+      {
+        topic: "python",
+        text: "哪一個 Python collection 用中括號表示，且可以修改內容？",
+        answers: ["list", "tuple", "dict", "set"],
+        correct: 0,
+        explanation: "list 用 [] 表示，而且是 mutable，可以改元素、append、extend。"
+      },
+      {
+        topic: "python",
+        text: "哪一個 Python collection 是 immutable，不能用 index 改值？",
+        answers: ["list", "tuple", "dict", "set"],
+        correct: 1,
+        explanation: "tuple 是 immutable；list 可以用 index 改值，dict 可以改 key 對應的 value。"
+      },
+      {
+        topic: "python",
+        text: "哪一個 Python collection 是 key-value 結構？",
+        answers: ["tuple", "dictionary", "list", "set"],
+        correct: 1,
+        explanation: "dict / dictionary 用 key-value 儲存，例如 {'a': 1, 'b': 3}。"
+      },
+      {
+        topic: "python",
+        text: "下面 class 建立物件時，哪個說法正確？",
+        code: "class G():\n    def __init__(self, a):\n        self.a = a",
+        answers: ["G('a').a 會得到 'a'", "G() 一定成功", "class 定義語法錯誤", "self.a 不能被讀取"],
+        correct: 0,
+        explanation: "__init__ 需要參數 a，所以 G('a') 成功且 g.a 是 'a'；G() 會因缺少 a 失敗。"
+      },
+      {
+        topic: "python",
+        text: "在 IPython 裡已經 import sys，要查看 sys 裡 path 開頭的名稱，最直接的方式是？",
+        answers: ["sys.path + enter", "sys.path<Tab>", "find 'path' in sys", "sys/path"],
+        correct: 1,
+        explanation: "IPython 可以用 Tab completion，例如輸入 sys.path 再按 Tab 查看符合 prefix 的名稱。"
+      },
+      {
+        topic: "python",
+        text: "下面程式中 y 的值是什麼？",
+        code: "x = [1, 2, 3]\ny = 4 in x",
+        answers: ["True", "False", "[False, False, False]", "4"],
+        correct: 1,
+        explanation: "4 不在 [1, 2, 3] 裡，所以 membership test 結果是 False。"
+      },
+      {
+        topic: "python",
+        text: "關於 L = [1, 'b', True, 3]，哪個說法正確？",
+        answers: ["Python list 可以混合不同型別", "list 只能放同一種型別", "True 不能放進 list", "字串不能放進 list"],
+        correct: 0,
+        explanation: "Python list 可以同時包含 int、str、bool 等不同資料型別。"
+      },
+      {
+        topic: "python",
+        text: "下面哪個寫法會得到 [4]？",
+        code: "x = [1, 3, 4, 7]",
+        answers: ["[y for y in x if y % 2 == 0]", "[y for y in x if x > 3]", "[x for y in x if y == 4]", "[y for y in x if y > 7]"],
+        correct: 0,
+        explanation: "只有 4 是偶數，所以 [y for y in x if y % 2 == 0] 會得到 [4]。"
+      },
+      {
+        topic: "python",
+        text: "如果 L = [3, 5, 2, 7, 9]，哪一個 expression 會得到反轉 list？",
+        answers: ["L[:2]", "L[-3:]", "L[::-1]", "L[::1]"],
+        correct: 2,
+        explanation: "step = -1 代表從後往前取，所以 L[::-1] 是 [9, 7, 2, 5, 3]。"
+      },
+      {
+        topic: "python",
+        text: "下面程式執行後，x 和 y 分別是什麼？",
+        code: "x = 2\ny = x\nx = x + 1",
+        answers: ["x = 3, y = 2", "x = 3, y = 3", "x = 2, y = 2", "x = 2, y = 3"],
+        correct: 0,
+        explanation: "int 是 immutable，x 重新指到新值 3，不會改到 y。"
+      },
+      {
+        topic: "python",
+        text: "下面程式執行後，x 和 y 分別是什麼？",
+        code: "x = [2]\ny = x\nx = x + [1]",
+        answers: ["x = [2, 1], y = [2]", "x = [2, 1], y = [2, 1]", "x = [2], y = [2, 1]", "x = [1], y = [2]"],
+        correct: 0,
+        explanation: "x + [1] 產生新 list，x 重新指向新 list；y 仍指向原本的 [2]。"
+      },
+      {
+        topic: "python",
+        text: "下面程式執行後，x 和 y 分別是什麼？",
+        code: "x = [2]\ny = x\nx.append(1)",
+        answers: ["x = [2, 1], y = [2, 1]", "x = [2, 1], y = [2]", "x = [2], y = [2, 1]", "x = [1], y = [2]"],
+        correct: 0,
+        explanation: "y 和 x 指向同一個 list。append 會改原物件，所以兩個都看到 [2, 1]。"
+      },
+      {
+        topic: "matrix",
+        text: "v 乘上 0.25 後會得到什麼？",
+        code: "v = np.array([2, 5, 3])\nv = v * 0.25",
+        answers: ["array([0.5, 1.25, 0.75])", "array([2.25, 5.25, 3.25])", "array([8, 20, 12])", "array([0.25, 0.25, 0.25])"],
+        correct: 0,
+        explanation: "NumPy array 乘 scalar 是 element-wise multiplication。"
+      },
+      {
+        topic: "matrix",
+        text: "要把向量 v normalize 成 unit norm vector，正確寫法是哪一個？",
+        code: "v = np.array([2, 5, 3])",
+        answers: ["w = 1 / v", "w = v / (v @ v)", "w = v / np.sqrt(v @ v)", "w = np.sqrt(v @ v)"],
+        correct: 2,
+        explanation: "unit norm 要除以 ||v||，而 ||v|| = sqrt(v @ v)。"
+      },
+      {
+        topic: "matrix",
+        text: "a + v 的結果是什麼？",
+        code: "a = np.array([4, 1, 8])\nv = np.array([2, 5, 3])",
+        answers: ["array([6, 6, 11])", "array([8, 5, 24])", "array([2, 4, 5])", "array([4, 1, 8, 2, 5, 3])"],
+        correct: 0,
+        explanation: "NumPy 向量加法是 element-wise：4+2, 1+5, 8+3。"
+      },
+      {
+        topic: "matrix",
+        text: "w = v * 1.3 + a * 0.25 的結果是什麼？",
+        code: "v = np.array([2, 5, 3])\na = np.array([4, 1, 8])",
+        answers: ["array([3.6, 6.75, 5.9])", "array([6, 6, 11])", "array([2.6, 6.5, 3.9])", "array([1.0, 0.25, 2.0])"],
+        correct: 0,
+        explanation: "逐元素算：2*1.3+4*.25=3.6，5*1.3+1*.25=6.75，3*1.3+8*.25=5.9。"
+      },
+      {
+        topic: "matrix",
+        text: "下面 matrix 加 vector 的結果是什麼？",
+        code: "np.array([[2, 5], [4, 1]]) + np.array([1, 2])",
+        answers: ["array([[3, 7], [5, 3]])", "array([[3, 5], [5, 7]])", "array([[2, 5], [1, 2]])", "array([[5, 7], [3, 5]])"],
+        correct: 0,
+        explanation: "vector [1, 2] 會 broadcast 到每一列。"
+      },
+      {
+        topic: "matrix",
+        text: "X @ w 的結果是什麼？",
+        code: "X = np.array([[2, 4], [-1, 4], [0, 8]])\nw = np.array([1, 5])",
+        answers: ["array([22, 19, 40])", "array([2, 20, 40])", "array([22, -19, 40])", "array([3, 9])"],
+        correct: 0,
+        explanation: "每一列做 dot product：2*1+4*5=22，-1*1+4*5=19，0*1+8*5=40。"
+      },
+      {
+        topic: "matrix",
+        text: "a @ v 的結果是多少？",
+        code: "a = np.array([4, 1, 8])\nv = np.array([2, 5, 3])",
+        answers: ["37", "23", "73", "array([8, 5, 24])"],
+        correct: 0,
+        explanation: "dot product = 4*2 + 1*5 + 8*3 = 37。"
+      },
+      {
+        topic: "matrix",
+        text: "V * 133 的第一列會是什麼？",
+        code: "V = np.array([[2, 5, 3], [4, 1, 8]])",
+        answers: ["[266, 665, 399]", "[226, 668, 499]", "[2, 5, 3]", "[532, 133, 1064]"],
+        correct: 0,
+        explanation: "scalar multiplication：2*133=266，5*133=665，3*133=399。"
+      },
+      {
+        topic: "matrix",
+        text: "x = [2, 3] 和 v = [4, 5] 的 Euclidean distance 約是多少？",
+        answers: ["2.828", "20.828", "0.2828", "4"],
+        correct: 0,
+        explanation: "sqrt((2-4)^2 + (3-5)^2) = sqrt(8) = 2.828。"
+      },
+      {
+        topic: "matrix",
+        text: "哪個點離 x = [0, 1] 最近？",
+        code: "X = np.array([[2, 4], [-1, 4], [0, 8]])",
+        answers: ["array([2, 4])", "array([-1, 4])", "array([0, 8])", "三個一樣近"],
+        correct: 1,
+        explanation: "距離分別約為 3.606、3.162、7，所以 [-1, 4] 最近。"
+      },
+      {
+        topic: "matrix",
+        text: "讀入 heights 後，要計算標準差應該用哪個函式？",
+        answers: ["np.std(heights)", "np.mean(heights)", "np.min(heights)", "np.percentile(heights, 25)"],
+        correct: 0,
+        explanation: "standard deviation 對應 np.std。"
+      },
+      {
+        topic: "matrix",
+        text: "要畫 heights 的 histogram，Matplotlib 正確寫法是？",
+        answers: ["plt.hist(heights)", "plt.histo(heights)", "plt.histogram(heights)", "plt.bar.hist(heights)"],
+        correct: 0,
+        explanation: "Matplotlib histogram 函式是 plt.hist。"
+      },
+      {
+        topic: "ncc",
+        text: "NCC 裡的 centroid 最像心理學分類理論裡的哪個概念？",
+        answers: ["prototype", "homonym", "password", "histogram"],
+        correct: 0,
+        explanation: "NCC 用每個 class 的 prototype / centroid 表示該類。"
+      },
+      {
+        topic: "ncc",
+        text: "哪個 NumPy 寫法能算兩個向量 x 和 y 的 Euclidean distance？",
+        answers: ["np.linalg.norm(x - y)", "np.sqrt(x @ y)", "x + y", "x @ y"],
+        correct: 0,
+        explanation: "Euclidean distance 是 ||x-y||，可用 np.linalg.norm(x - y)。"
+      },
+      {
+        topic: "ncc",
+        text: "哪個 NumPy 寫法能算 X 每一列到點 y 的距離？",
+        code: "X.shape == (3, 2)\ny.shape == (2,)",
+        answers: ["np.linalg.norm(X - y, axis=1)", "np.linalg.norm(X - y, axis=0)", "np.linalg.norm(X @ y)", "np.sqrt(y @ y)"],
+        correct: 0,
+        explanation: "rows 是 samples，所以 axis=1 會對每一列的 feature 算距離。"
+      },
+      {
+        topic: "ncc",
+        text: "要計算 label = -1 的 class mean vector，哪個寫法最正確？",
+        code: "X = np.array([[3,1], [4,2], [2,-1], [4,-1]])\ny = np.array([-1, 1, 1, -1])",
+        answers: ["X[y == -1, :].mean(axis=0)", "X[y == -1, :].mean(axis=1)", "X[:, y == -1].mean(axis=0)", "X[y == -1, :].mean()"],
+        correct: 0,
+        explanation: "先選出 label 為 -1 的 rows，再用 axis=0 對 rows 平均，得到每個 feature 的平均向量。"
+      },
+      {
+        topic: "ncc",
+        text: "Binary NCC 的 decision boundary 和什麼方向垂直？",
+        answers: ["兩個 class centroid 的差向量", "第一個 training sample", "資料矩陣的第一欄", "class variance 最大的方向"],
+        correct: 0,
+        explanation: "兩個 centroid 中間的分界線/平面，會和 centroid 差向量 orthogonal。"
+      },
+      {
+        topic: "ncc",
+        text: "哪個說法正確？",
+        answers: ["非線性 feature transformation 可能讓 linear classifier 解決原本非線性的問題", "NCC 會明確建模每個 class 的 variance", "linear classifier 可以直接學任何非線性邊界", "NCC 不需要距離概念"],
+        correct: 0,
+        explanation: "線性模型在轉換後的 feature space 可以形成原始空間中的非線性分界。NCC 本身主要看 centroid 距離。"
+      },
+      {
+        topic: "knn",
+        text: "KNN 的 prediction 流程正確的是哪一個？",
+        answers: ["找最近的 k 個 training points，回傳其中最常見 label", "先算每個 class centroid，再選最近 centroid", "先用 gradient descent 訓練 weights", "把資料分成 k 個沒有 label 的 clusters"],
+        correct: 0,
+        explanation: "KNN 是 instance-based：找 neighbors，做 majority vote。"
+      },
+      {
+        topic: "knn",
+        text: "k 變大時，KNN decision boundary 通常會怎樣？",
+        answers: ["更平滑、更不複雜", "一定讓 test accuracy 變高", "變成 K-Means", "prediction 一定更快"],
+        correct: 0,
+        explanation: "較大的 k 會平均更多 neighbors，boundary 通常更平滑；但不保證 test performance 一定提升。"
+      },
+      {
+        topic: "knn",
+        text: "如果 x 不在 X 裡，找 k nearest neighbors index 的寫法是哪個？",
+        answers: ["np.linalg.norm(X - x, axis=1).argsort()[:k]", "np.linalg.norm(X - x, axis=1).argsort()[-k:]", "np.linalg.norm(X - x, axis=1).argsort()[1:k+1]", "np.linalg.norm(X @ x, axis=1)"],
+        correct: 0,
+        explanation: "距離由小到大排序後取前 k 個。因為 x 不在 X 裡，不需要跳過第一個。"
+      },
+      {
+        topic: "knn",
+        text: "關於 KNN training phase，哪個說法最準確？",
+        answers: ["幾乎沒有訓練，model 基本上就是 training data", "一定要用 backpropagation 訓練", "一定要先算 class centroid", "不能處理 classification"],
+        correct: 0,
+        explanation: "KNN 是 lazy learner，prediction 時才計算距離。"
+      },
+      {
+        topic: "feature",
+        text: "n-gram bag-of-words feature 主要記錄什麼？",
+        answers: ["長度 n 的 token sequence count", "神經網路權重", "class centroid", "test accuracy"],
+        correct: 0,
+        explanation: "n-gram 是連續 n 個 token，bag-of-words 類特徵通常記錄出現次數。"
+      },
+      {
+        topic: "feature",
+        text: "自然語言 n-gram feature vector 通常有什麼特性？",
+        answers: ["很 sparse，大部分值是 0", "所有值幾乎都 non-zero", "dimension 一定很小", "不能放進 pipeline"],
+        correct: 0,
+        explanation: "文字 vocabulary 很大，但單一文本只包含少數 token，所以大多數 feature 是 0。"
+      },
+      {
+        topic: "feature",
+        text: "資料 [['large'], ['small'], ['medium'], ['small'], ['large']] one-hot 後會有幾個 feature columns？",
+        answers: ["3", "2", "5", "1"],
+        correct: 0,
+        explanation: "類別有 large、medium、small 三種，所以 one-hot 後有 3 欄。"
+      },
+      {
+        topic: "feature",
+        text: "ML Pipeline 通常包含哪兩個主要部分？",
+        answers: ["feature extractor 和 ML model", "training set 和 password", "centroid 和 neighbor", "HTML 和 CSS"],
+        correct: 0,
+        explanation: "Pipeline 把 preprocessing / feature extraction 和 model prediction 串起來。"
+      },
+      {
+        topic: "eval",
+        text: "ML system 最核心的特徵是什麼？",
+        answers: ["從 data 學 rules / patterns", "完全不依賴資料", "只能用普通 unit test 評估", "不會 overfit"],
+        correct: 0,
+        explanation: "機器學習模型的規則是從資料中學出來的，所以評估也必須用資料切分和泛化能力。"
+      },
+      {
+        topic: "eval",
+        text: "固定 hyperparameters、不做 model selection 時，至少需要哪些 split？",
+        answers: ["training set 和 test set", "只要 training set", "training、validation、test、production 四份", "只要 validation set"],
+        correct: 0,
+        explanation: "要訓練和評估，至少需要 train/test。若要調參，通常再加 validation set。"
+      },
+      {
+        topic: "eval",
+        text: "Precision 的公式是哪一個？",
+        answers: ["TP / (TP + FP)", "TP / (TP + FN)", "(TP + TN) / all", "FP / (FP + TN)"],
+        correct: 0,
+        explanation: "Precision 問的是：模型預測為 positive 的案例中，有多少是真的 positive。"
+      },
+      {
+        topic: "eval",
+        text: "資料 positive class 30%、negative class 70%。永遠預測 positive 的 accuracy 是多少？",
+        answers: ["30%", "70%", "100%", "0%"],
+        correct: 0,
+        explanation: "永遠預測 positive，只會答對真正 positive 的 30%。"
+      },
+      {
+        topic: "cluster",
+        text: "Clustering 和 classification 最大差別是什麼？",
+        answers: ["Clustering 沒有 labels，是 unsupervised", "Clustering 一定要用 Perceptron", "Classification 沒有 labels", "兩者完全相同"],
+        correct: 0,
+        explanation: "Clustering 要從沒有 label 的資料中找內部結構；classification 則用 label 學分類。"
+      },
+      {
+        topic: "cluster",
+        text: "K-Means 的兩個主要重複步驟是什麼？",
+        answers: ["assign points to nearest centroid；update centroids", "train weights；backpropagation", "one-hot encoding；precision", "append list；slice tuple"],
+        correct: 0,
+        explanation: "K-Means 反覆做 assignment step 和 update step，直到穩定。"
+      },
+      {
+        topic: "cluster",
+        text: "K-Means 的 objective 通常是在最小化什麼？",
+        answers: ["cluster 內點到 centroid 的 squared distances 總和", "precision", "cross entropy of labels", "Python list 長度"],
+        correct: 0,
+        explanation: "K-Means 最小化 within-cluster sum of squared distances。"
+      },
+      {
+        topic: "cluster",
+        text: "哪一個是 K-Means 的常見限制？",
+        answers: ["對 initialization 和 outliers 敏感", "必須有 class labels", "不需要指定 k", "centroid 一定是真實資料點"],
+        correct: 0,
+        explanation: "K-Means 需要指定 k，centroid 是平均向量，不一定是真實點，且對初始值與 outlier 敏感。"
+      },
+      {
+        topic: "cluster",
+        text: "K-Means 裡的 k 代表什麼？",
+        answers: ["clusters 的數量", "nearest neighbors 的數量", "features 的數量", "epochs 的數量"],
+        correct: 0,
+        explanation: "K-Means 的 k 是要分成幾群；KNN 的 k 才是 neighbors 數。"
+      },
+      {
+        topic: "cluster",
+        text: "K-Means 的 centroid 一定是 dataset 裡真實存在的點嗎？",
+        answers: ["不一定，centroid 是平均向量", "一定是最近的 sample", "一定是第一個 sample", "只有 k=1 時才存在"],
+        correct: 0,
+        explanation: "centroid 是 cluster 中所有點的平均，平均結果不一定等於某個實際 sample。"
+      },
+      {
+        topic: "cluster",
+        text: "為什麼 K-Means 前常需要 feature scaling？",
+        answers: ["距離會被尺度大的 feature 主導", "scaling 會產生 labels", "不 scaling 程式不能執行", "scaling 會把 k 自動找出來"],
+        correct: 0,
+        explanation: "K-Means 依賴距離；尺度大的 feature 會對距離有過大影響。"
+      },
+      {
+        topic: "cluster",
+        text: "K-Means 比較適合哪種 cluster 形狀？",
+        answers: ["大致圓形 / convex 的 clusters", "任意月牙形 clusters", "只有一個點的 clusters", "只有文字資料"],
+        correct: 0,
+        explanation: "K-Means 用 centroid 和 Euclidean distance，對 roughly spherical / convex clusters 較合適。"
+      },
+      {
+        topic: "perceptron",
+        text: "Perceptron 的 prediction 通常可以寫成哪一個？",
+        answers: ["sign(w @ x + b)", "mean(X[y == -1])", "argsort()[:k]", "hist(heights)"],
+        correct: 0,
+        explanation: "Perceptron 是 linear classifier，用 w @ x + b 的符號決定 class。"
+      },
+      {
+        topic: "perceptron",
+        text: "Perceptron 什麼時候更新 weights？",
+        answers: ["分錯或剛好在 boundary 時", "每次都更新，不管對錯", "只有 test set 上更新", "沒有 labels 時更新"],
+        correct: 0,
+        explanation: "若 y * (w @ x + b) <= 0，代表分類錯或在 boundary，需要更新。"
+      },
+      {
+        topic: "perceptron",
+        text: "Perceptron weight update 的正確形式是哪一個？",
+        answers: ["w = w + lr * y * x", "w = w - x", "w = mean(X)", "w = argsort(X)[:k]"],
+        correct: 0,
+        explanation: "對錯分樣本，Perceptron 用 y*x 的方向更新權重。"
+      },
+      {
+        topic: "perceptron",
+        text: "Perceptron bias update 的正確形式是哪一個？",
+        answers: ["b = b + lr * y", "b = b + x", "b = mean(y)", "b 不可能更新"],
+        correct: 0,
+        explanation: "bias 也要跟著 label 方向更新，常見寫法是 b += lr * y。"
+      },
+      {
+        topic: "perceptron",
+        text: "Perceptron 的 decision boundary 在 2D 中通常是什麼？",
+        answers: ["一條直線", "一個 cluster centroid", "一個 histogram", "一個 dictionary"],
+        correct: 0,
+        explanation: "w1*x1 + w2*x2 + b = 0 在 2D 是一條直線。"
+      },
+      {
+        topic: "perceptron",
+        text: "Perceptron 的 weight vector w 和 decision boundary 的關係是什麼？",
+        answers: ["w 是 boundary 的 normal vector", "w 平行於所有資料點", "w 是 class label", "w 是 cluster 數量"],
+        correct: 0,
+        explanation: "線性邊界 w @ x + b = 0 的 normal direction 就是 w。"
+      },
+      {
+        topic: "perceptron",
+        text: "如果資料不是 linearly separable，Perceptron 可能會怎樣？",
+        answers: ["可能無法收斂", "一定 100% accuracy", "變成 K-Means", "不需要 bias"],
+        correct: 0,
+        explanation: "Perceptron convergence theorem 需要資料 linearly separable；否則可能一直更新。"
+      },
+      {
+        topic: "perceptron",
+        text: "Perceptron 屬於哪一類學習？",
+        answers: ["supervised binary classification", "unsupervised clustering", "one-hot encoding", "histogram plotting"],
+        correct: 0,
+        explanation: "Perceptron 需要 labels，通常用於 binary classification。"
+      }
+    ];
+
+    const originalQuestionOverrides = [
+      {
+        text: "Assign the following definitions to the right python collection.",
+        code: "[1,2,3]\n{1,2,3}\n{'1':1,'2':2}\n(1,2,3)",
+        answers: ["[1,2,3] = List; {1,2,3} = Set; {'1':1,'2':2} = Dictionary; (1,2,3) = Tuple", "[1,2,3] = Tuple; {1,2,3} = List; {'1':1,'2':2} = Set; (1,2,3) = Dictionary", "[1,2,3] = Set; {1,2,3} = Tuple; {'1':1,'2':2} = List; (1,2,3) = Dictionary"],
+        correct: 0,
+        explanation: "這題原本是 Moodle matching。list 用 []，set 用 {}，dictionary 是 key-value，tuple 用 ()。"
+      },
+      {
+        text: "Given the following code, which of the following statements is true?",
+        code: "class G():\n    def __init__(self, a):\n        self.a = a",
+        answers: ["The program will crash because the class definition is syntactically wrong.", "g = G('a'); g.a will return 'a'", "g = G(); g.a will fail."],
+        correct: [1, 2],
+        explanation: "class 定義本身正確。G('a') 會建立物件且 g.a 是 'a'；G() 缺少必要參數 a。"
+      },
+      {
+        text: "Assume you are in an ipython shell and you have loaded a python module as follows: import sys. How can you find all functions with the prefix path in the sys module?",
+        answers: ["sys.path*?", "find 'path' in sys", "sys.path[tab]"],
+        correct: [0, 2],
+        explanation: "IPython 可以用 tab completion，也可以用 wildcard introspection 查找符合 prefix 的名稱。"
+      },
+      {
+        text: "Consider the assignments. What's the content of y?",
+        code: "x = [1,2,3]\ny = 4 in x",
+        answers: ["True", "[False, False, False]", "False"],
+        correct: 2,
+        explanation: "4 不在 list 裡，所以 membership test 是 False。"
+      },
+      {
+        text: "Consider the following list: L = [1,'b',True,3]. Which of the following statements is true?",
+        answers: ["The list definition will fail, as there are different data types in the list.", "After executing LL = L; L[2] = 4, LL will contain [1, 'b', 4, 3]", "After executing LL = L; L[2] = 4, L will contain [1, 'b', 4, 3]"],
+        correct: [1, 2],
+        explanation: "Python list 可以混合型別。LL = L 讓兩者指向同一個 list，所以改 L 也會反映在 LL。"
+      },
+      {
+        text: "Consider the following list in python: x = [1, 3, 4, 7]. Which of the following functions produces the output: [4]?",
+        answers: ["[y for y in x if (x > 3) and (x < 7)]", "y = []\nfor idx in range(len(x)):\n    if x[idx]//2==2:\n        y.append(x[idx])\ny", "[y for y in x if y%2 == 0]"],
+        correct: [1, 2],
+        explanation: "第二個 loop 只會 append 4；第三個 list comprehension 也只會選出偶數 4。"
+      },
+      {
+        text: "Given the following list L = [3,5,2,7,9], which of the following statements is true?",
+        answers: ["L[:2] will return [3,5,2]", "L[::-1] will return [9, 7, 2, 5, 3]", "L[-3:] will return [7, 9]"],
+        correct: 1,
+        explanation: "L[::-1] 會反轉。L[:2] 是 [3,5]，L[-3:] 是 [2,7,9]。"
+      },
+      {
+        text: "Which of the following statements is true?",
+        answers: ["a = (1, 2, 3); a[0] = 'foo' will fail.", "a = [1, 2, 3]; a[0] = 'foo' will fail.", "a = {'foo':0,'bar':1}; a[0] will return 'foo'"],
+        correct: 0,
+        explanation: "tuple 不可修改；list 可以修改；dict 需要用存在的 key 取值。"
+      },
+      {
+        text: "Consider the following program. What are the contents of x and y?",
+        code: "x = 2\ny = x\nx = x + 1",
+        answers: ["x: 2; y: 2", "x: 3; y: 3", "x: 3; y: 2"],
+        correct: 2,
+        explanation: "int 是 immutable，x 重新指向 3，不會改到 y。"
+      },
+      {
+        text: "Consider the following program. What are the contents of x and y?",
+        code: "x = [2]\ny = x\nx = x + [1]",
+        answers: ["x: [2, 1]; y: [2, 1]", "x: [2, 1]; y: [2]", "x: [2]; y: [2, 1]"],
+        correct: 1,
+        explanation: "x + [1] 會建立新 list，y 仍指向舊 list。"
+      },
+      {
+        text: "Consider the following program. What are the contents of x and y?",
+        code: "x = [2]\ny = x\nx.append(1)",
+        answers: ["x: [2]; y: [2, 1]", "x: [2, 1]; y: [2, 1]", "x: [2, 1]; y: [2]"],
+        correct: 1,
+        explanation: "append 修改同一個 list，所以 x 和 y 都看到 [2,1]。"
+      },
+      {
+        text: "Consider the following program. What is the content of x and y?",
+        code: "x = {'a':1, 'b':3}\ny = ['c', 'd']\nx['a'] = y[-1]",
+        answers: ["x: {'a': 'd', 'b': 3}; y: ['c', 'd']", "x: {'a': 1, 'b': 3}; y: ['a', 'd']", "x: {'d': 'a', 'b': 3}; y: ['c', 'd']"],
+        correct: 0,
+        explanation: "y[-1] 是 'd'，所以 x['a'] 被改成 'd'；y 本身不變。"
+      }
+    ];
+
+    originalQuestionOverrides.forEach((override, index) => {
+      Object.assign(questions[index], override);
+    });
+
+    const remainingQuestionOverrides = [
+      {
+        text: "Consider the following vector. What is the content of v after scaling it with 0.25?",
+        code: "import numpy as np\nv = np.array([2,5,3])\nv = v * 0.25",
+        answers: ["array([0.5 , 1.25, 0.75])", "array([1.5 , 1.25, 3])", "array([2.5 , 1.5, 1.75])"],
+        correct: 0,
+        explanation: "NumPy array 乘 scalar 是逐元素相乘。"
+      },
+      {
+        text: "Consider the vector. Which of the following code snippets would normalize the vector v to a unit norm vector w such that w @ w is equal to 1?",
+        code: "import numpy as np\nv = np.array([2,5,3])",
+        answers: ["w = (1 / v)", "w = (v / np.sqrt(v @ v))", "w = (v / (v @ v))"],
+        correct: 1,
+        explanation: "unit norm 要除以 ||v||，也就是 sqrt(v @ v)。"
+      },
+      {
+        text: "Consider the following vectors and the addition of the two. What is the content of w?",
+        code: "import numpy as np\nv = np.array([2,5,3])\na = np.array([4,1,8])\nw = a + v",
+        answers: ["array([ 6, 6, 11])", "array([ 6, 2, 5])", "array([ 2, 5, 11])"],
+        correct: 0,
+        explanation: "向量加法是逐元素相加。"
+      },
+      {
+        text: "What is the content of the following vector w = v * 1.3 + a * .25?",
+        code: "import numpy as np\nv = np.array([2,5,3])\na = np.array([4,1,8])",
+        answers: ["array([3.2 , 7.65, 9.5])", "array([3.6 , 6.75, 5.9 ])", "array([2.5 , 5.65, 3.2])"],
+        correct: 1,
+        explanation: "逐元素計算後是 [3.6, 6.75, 5.9]。"
+      },
+      {
+        text: "What is the result of the following matrix addition?",
+        code: "np.array([[2,5], [4,1]]) + np.array([1,2])",
+        answers: ["array([[3, 7], [5, 3]])", "array([[5, 7], [3, 5]])", "array([[3, 5], [5, 7]])"],
+        correct: 0,
+        explanation: "[1,2] 會 broadcast 到 matrix 每一列。"
+      },
+      {
+        text: "Consider the matrix X and vector w. What is the result of the matrix product X @ w?",
+        code: "X = np.array([[2,4],[-1,4],[0,8]])\nw = np.array([1,5])",
+        answers: ["array([22, 19, 40])", "array([222, 19, 40])", "array([22, 19, 4])"],
+        correct: 0,
+        explanation: "每一列和 w 做 dot product，結果是 [22,19,40]。"
+      },
+      {
+        text: "Consider the two vectors a and v. What is the scalar product of a and v, a @ v?",
+        code: "import numpy as np\nv = np.array([2,5,3])\na = np.array([4,1,8])",
+        answers: ["37", "23", "73"],
+        correct: 0,
+        explanation: "4*2 + 1*5 + 8*3 = 37。"
+      },
+      {
+        text: "Consider the matrix V. What is the content of W = V * 133?",
+        code: "import numpy as np\nV = np.array([[2,5,3], [4,1,8]])",
+        answers: ["array([[ 266, 665, 399], [ 532, 133, 1064]])", "array([[ 226, 668, 499], [ 512, 133, 1064]])", "array([[ 166, 615, 339], [ 632, 133, 1024]])"],
+        correct: 0,
+        explanation: "每個元素都乘以 133。"
+      },
+      {
+        text: "Consider the following data points and a function that computes the euclidean distance between two points. What is the distance between x and v?",
+        code: "x = np.array([2,3])\nv = np.array([4,5])\ndef dist(a,b):\n    return np.sqrt(((a - b)**2).sum())",
+        answers: ["2.8284271247461903", "20.8284271247461903", "0.28284271247461903"],
+        correct: 0,
+        explanation: "sqrt((2-4)^2 + (3-5)^2) = sqrt(8)。"
+      },
+      {
+        text: "Consider the following data set of 3 points in 2 dimensions. Which of these points is closest to x = np.array([0,1])?",
+        code: "X = np.array([[2,4],[-1,4],[0,8]])",
+        answers: ["array([-1, 4])", "array([0, 8])", "array([2, 4])"],
+        correct: 0,
+        explanation: "[-1,4] 的距離 sqrt(10) 最小。"
+      },
+      {
+        text: "Download the file president_heights.csv and read the heights of the presidents into a numpy array. Compute summary statistics and match the quantities with the right stats.",
+        answers: ["Mean height = 180; 25th percentile = 174; Minimum = 163; Standard deviation = 7", "Mean height = 174; 25th percentile = 170; Minimum = 163; Standard deviation = 7", "Mean height = 163; 25th percentile = 174; Minimum = 180; Standard deviation = 7"],
+        correct: 0,
+        explanation: "原題是 Moodle matching 題；這裡改成可刷的選擇題格式。常用函式是 mean、percentile、min、std。"
+      },
+      {
+        text: "Given the heights of presidents data in the file president_height.csv, which of the following programs plots the histogram of heights, stored in the variable heights?",
+        answers: ["import matplotlib.pyplot as plt\nplt.histogram(heights)", "import matplotlib.pyplot as plt\nplt.histo(heights)", "import matplotlib.pyplot as plt\nplt.hist(heights)"],
+        correct: 2,
+        explanation: "Matplotlib 的 histogram 函式是 plt.hist。"
+      },
+      {
+        text: "Some psychologists postulate that we classify objects by learning ...",
+        answers: ["... prototypes.", "... homonyms."],
+        correct: 0,
+        explanation: "NCC 的 centroid 可以理解成 class prototype。"
+      },
+      {
+        text: "Consider two vectors x and y in a d dimensional space. The euclidean distance ||x-y|| between the two vectors can be computed in numpy by",
+        answers: ["np.sqrt(x@y)", "np.sqrt(sum((x - y)**2))", "np.sqrt(((x - y) @ (x - y)))", "np.linalg.norm(x - y)"],
+        correct: [1, 2, 3],
+        explanation: "Euclidean distance 是 sqrt(sum((x-y)^2))，也可用 norm。"
+      },
+      {
+        text: "Consider multiple data points stored as rows of a matrix and one other data point with the same dimensionality. How can you compute the distance between all data points (rows) in X and y in python/numpy?",
+        code: "X = np.array([[3,1],[4,2],[2,-1]])\ny = np.array([3,3])",
+        answers: ["distance = np.zeros(X.shape[0])\nfor i in range(X.shape[0]):\n    distance[i] = np.sqrt(np.sum((X[i,:] - y)**2))", "distance = np.sqrt(np.sum((X - y)**2, axis=1))", "distance = np.linalg.norm(X - y, axis=1)", "distance = [np.sqrt(np.sum((x - y)**2)) for x in X]"],
+        correct: [0, 1, 2, 3],
+        explanation: "四種都能逐列計算到 y 的距離。"
+      },
+      {
+        text: "Consider a set of four data points in two dimensions stored as rows in X and corresponding binary class labels y. How can you compute the mean vector of the class corresponding to the label -1?",
+        code: "X = np.array([[3,1],[4,2],[2,-1],[4,-1]])\ny = np.array([-1,1,1,-1])",
+        answers: ["X[y<0,:].mean()", "X[y==-1,:].mean(axis=1)", "X[y<0,:].mean(axis=0)", "X[:,y<0].mean(axis=1)"],
+        correct: 2,
+        explanation: "選出 label -1 的 rows，再用 axis=0 得到 feature-wise mean vector。"
+      },
+      {
+        text: "Which of the following statements are true?",
+        answers: ["Nearest Centroid Classification takes the variance of the data in the different classes into account.", "If a data set cannot be classified correctly with a linear classifier, one can find a non-linear transformation of the data after which the data can be classified correctly with a linear classifier.", "In a binary classification problem, Nearest Centroid Classification finds a decision boundary that is orthogonal to the difference vector of the respective means of both classes.", "Linear classifiers can learn non-linear decision boundaries."],
+        correct: [1, 2],
+        explanation: "NCC 不考慮 variance；binary NCC 的 boundary 與兩個 centroid 差向量垂直。非線性 feature transform 可讓 linear classifier 在轉換空間工作。"
+      },
+      {
+        text: "What was/is difficult to understand about the NCC algorithm or the implementation?",
+        answers: ["Open reflection question: distance computation and axis handling", "Open reflection question: HTML styling", "Open reflection question: Moodle login"],
+        correct: 0,
+        explanation: "原題是開放題；這裡用可刷格式保留重點：NCC 最容易混淆的是距離、axis、class mean。"
+      }
+    ];
+
+    remainingQuestionOverrides.forEach((override, index) => {
+      Object.assign(questions[index + 12], override);
+    });
+
+    const finalQuestionOverrides = [
+      {
+        text: "Which of the following statements about KNN is correct?",
+        answers: ["The KNN algorithm becomes faster with more data points.", "Increasing the hyperparameter k will lead to smoother and less complex decision boundaries.", "The KNN Algorithm takes a new data point x and finds the k closest neighbors to x in the training data set and returns the most frequent label of the k closest neighbours of x.", "The KNN Algorithm takes a new data point and finds the class centroids and assigns each new data point to the class whose centroid is closest.", "Decreasing the hyperparameter k will always increase the classification performance on the test set.", "For KNN there is no training phase, the model is the data itself."],
+        correct: [1, 2, 5],
+        explanation: "KNN 找最近 k 個 neighbor 做 majority vote；k 越大邊界通常越平滑；KNN 幾乎沒有訓練階段。"
+      },
+      {
+        text: "Which of the following code snippets computes the indices of the k nearest neighbors of a data point x to all points in a data set X (rows: samples, columns: features)? Note that the data point x is not in X!",
+        answers: ["np.linalg.norm(X - x, axis=1).argsort()[:k]", "np.linalg.norm(X - x, axis=1).argsort()[-k:]", "np.linalg.norm(X - x, axis=1).argsort()[1:k+1]"],
+        correct: 0,
+        explanation: "距離由小到大排序取前 k 個。x 不在 X 裡，所以不用跳過第一個。"
+      },
+      {
+        text: "For KNN there is no training phase. What does this mean?",
+        answers: ["The model is essentially the training data itself.", "KNN cannot make predictions.", "KNN must learn class centroids first.", "KNN is an unsupervised clustering method."],
+        correct: 0,
+        explanation: "這是 LMS KNN 題的核心敘述延伸：KNN 是 lazy / instance-based learner。"
+      },
+      {
+        text: "What happens to KNN decision boundaries when k is increased?",
+        answers: ["They usually become smoother and less complex.", "They always become more complex.", "They become nearest-centroid boundaries.", "They no longer depend on distance."],
+        correct: 0,
+        explanation: "k 越大會平均更多鄰居，邊界通常更平滑。"
+      },
+      {
+        text: "Which of the following statements is true for n-gram bag-of-word features?",
+        answers: ["Most values in an n-gram feature vector extracted from natural language texts are non-zero.", "n-gram features contain the counts of token sequences of length n in a text.", "Denoting the size of the vocabulary as V the memory consumption of n-gram features can become (constant factor for storing a token) times V-n."],
+        correct: [1, 2],
+        explanation: "n-gram feature 記錄長度 n 的 token sequence 次數；可能的 n-gram 數量會隨 vocabulary size 快速成長，約是 V^n 等級。文字向量通常 sparse，不是大多數 non-zero。"
+      },
+      {
+        text: "Consider the following data set. Which one-hot encoded representation is correct?",
+        code: "[['large'], ['small'], ['medium'], ['small'], ['large']]",
+        answers: ["array([[1., 0.], [0., 0.], [0., 1.], [0., 0.], [1., 0.]])", "array([[1., 0., 0.], [0., 0., 1.], [0., 1., 0.], [0., 0., 1.], [1., 0., 0.]])", "array([[1., 0., 0.], [0., 0., 1.]])"],
+        correct: 1,
+        explanation: "有 large、medium、small 三類，所以需要 3 欄，且 5 筆資料都要被編碼。"
+      },
+      {
+        text: "Which of the following statements about Machine Learning (ML) Pipelines is true?",
+        answers: ["Good generalization performance of a pipeline requires tuning of the feature extraction hyperparameters as well as the ML model parameters.", "Using ML Pipeline APIs can require additional implementation overhead to integrate custom feature extraction code into a pipeline.", "ML Pipelines consist of feature extractors and ML models that take the extracted features and make a prediction."],
+        correct: [0, 1, 2],
+        explanation: "三個敘述都正確。Pipeline 包含 feature extraction 和 model，且兩邊的 hyperparameters 都可能需要調整。"
+      },
+      {
+        text: "Why are n-gram text feature vectors usually sparse?",
+        answers: ["A single document contains only a small subset of all possible vocabulary n-grams.", "Every document contains every vocabulary n-gram.", "Sparse means all values are non-zero.", "n-grams cannot be represented numerically."],
+        correct: 0,
+        explanation: "這是 n-gram 題的核心觀念：vocabulary 大，但單篇文本只出現少量 token sequences。"
+      },
+      {
+        text: "Machine Learning systems ...",
+        answers: ["... with enough parameters can learn to correctly classify any data set corresponding to a classification problem.", "... do not depend on data and hence can be tested just like normal software systems.", "... learn rules from data."],
+        correct: [0, 2],
+        explanation: "ML 從資料學規則；高參數模型可能記住資料。它們依賴資料，因此不能只像一般軟體那樣測。"
+      },
+      {
+        text: "How many splits/folds of your data set are needed at least for training and evaluating a machine learning model, with a fixed set of hyperparameters (that means without model selection/hyperparameter optimization)?",
+        answers: ["3", "1", "2"],
+        correct: 2,
+        explanation: "至少需要 training 和 test 兩份。若要調參，才通常需要 validation。"
+      },
+      {
+        text: "Which of the following statements about classification metrics is true?",
+        answers: ["If a classifier achieves 80% precision its accuracy will not be lower than 80%.", "For a binary data set in which the positive class accounts for 30% of the cases and the negative class accounts for 70% of the cases, a classifier that always predicts the positive class has an accuracy of 30%.", "A classifier that always predicts the most frequent class can achieve high accuracies when the class distribution is balanced."],
+        correct: 1,
+        explanation: "永遠預測 positive 只會答對真正 positive 的 30%。Precision 不等於 accuracy；balanced data 下 majority baseline 不會很高。"
+      },
+      {
+        text: "Why can accuracy be misleading for imbalanced classification data?",
+        answers: ["A trivial classifier can get high accuracy by predicting the majority class.", "Accuracy is always equal to precision.", "Accuracy cannot be computed for binary data.", "Accuracy ignores all correct predictions."],
+        correct: 0,
+        explanation: "這是 evaluation 題的延伸重點：class imbalance 時 majority baseline 可能看似表現很好。"
+      },
+      {
+        text: "What is the key difference between clustering and classification?",
+        answers: ["Clustering is unsupervised and does not use class labels.", "Clustering always requires a perceptron.", "Classification has no labels.", "They are exactly the same task."],
+        correct: 0,
+        explanation: "Clustering 沒有 label，目標是找資料內部結構。"
+      },
+      {
+        text: "What are the two main repeated steps in K-Means?",
+        answers: ["Assign points to nearest centroid; update centroids.", "Train weights; backpropagate gradients.", "One-hot encode labels; compute precision.", "Append lists; slice tuples."],
+        correct: 0,
+        explanation: "K-Means 重複 assignment step 和 update step。"
+      },
+      {
+        text: "What objective does K-Means usually minimize?",
+        answers: ["The sum of squared distances from points to their assigned centroids.", "Precision.", "Cross entropy of labels.", "Python list length."],
+        correct: 0,
+        explanation: "K-Means 最小化 within-cluster sum of squared distances。"
+      },
+      {
+        text: "Which of the following is a common limitation of K-Means?",
+        answers: ["It is sensitive to initialization and outliers.", "It must have class labels.", "It does not require choosing k.", "The centroid is always a real data point."],
+        correct: 0,
+        explanation: "K-Means 需要指定 k，對初始值和 outliers 敏感，centroid 不一定是真實點。"
+      },
+      {
+        text: "What does k mean in K-Means?",
+        answers: ["The number of clusters.", "The number of nearest neighbors.", "The number of features.", "The number of epochs."],
+        correct: 0,
+        explanation: "K-Means 的 k 是 clusters 數；KNN 的 k 才是 neighbors 數。"
+      },
+      {
+        text: "Is a K-Means centroid always one of the real data points?",
+        answers: ["No, a centroid is a mean vector.", "Yes, it is always the nearest sample.", "Yes, it is always the first sample.", "Only when k = 1."],
+        correct: 0,
+        explanation: "centroid 是平均向量，不一定等於資料中的某個 sample。"
+      },
+      {
+        text: "Why is feature scaling often important before K-Means?",
+        answers: ["Distance can be dominated by features with larger scales.", "Scaling creates class labels.", "The program cannot run without scaling.", "Scaling automatically finds k."],
+        correct: 0,
+        explanation: "K-Means 依賴距離，尺度大的 feature 會支配距離。"
+      },
+      {
+        text: "Which cluster shape is K-Means best suited for?",
+        answers: ["Roughly spherical / convex clusters.", "Arbitrary crescent-shaped clusters.", "Only one-point clusters.", "Only text data."],
+        correct: 0,
+        explanation: "K-Means 用 centroid 和 Euclidean distance，較適合圓形或 convex clusters。"
+      },
+      {
+        text: "How can the prediction of a perceptron usually be written?",
+        answers: ["sign(w @ x + b)", "mean(X[y == -1])", "argsort()[:k]", "hist(heights)"],
+        correct: 0,
+        explanation: "Perceptron 是線性分類器，用 w @ x + b 的符號決定類別。"
+      },
+      {
+        text: "When does a perceptron update its weights?",
+        answers: ["When a sample is misclassified or lies on the boundary.", "Every time, regardless of correctness.", "Only on the test set.", "When there are no labels."],
+        correct: 0,
+        explanation: "若 y * (w @ x + b) <= 0，表示分錯或在邊界上，需要更新。"
+      },
+      {
+        text: "Which one is the usual perceptron weight update?",
+        answers: ["w = w + learning_rate * y * x", "w = w - x", "w = mean(X)", "w = argsort(X)[:k]"],
+        correct: 0,
+        explanation: "Perceptron 對錯分樣本沿著 y*x 的方向更新權重。"
+      },
+      {
+        text: "Which one is the usual perceptron bias update?",
+        answers: ["b = b + learning_rate * y", "b = b + x", "b = mean(y)", "b never changes"],
+        correct: 0,
+        explanation: "bias 也依照 label 方向更新。"
+      },
+      {
+        text: "What is the perceptron decision boundary in 2D?",
+        answers: ["A straight line.", "A cluster centroid.", "A histogram.", "A dictionary."],
+        correct: 0,
+        explanation: "w1*x1 + w2*x2 + b = 0 在 2D 是直線。"
+      },
+      {
+        text: "What is the relation between the weight vector w and the decision boundary?",
+        answers: ["w is the normal vector of the boundary.", "w is parallel to all data points.", "w is the class label.", "w is the number of clusters."],
+        correct: 0,
+        explanation: "線性邊界 w @ x + b = 0 的法向量是 w。"
+      },
+      {
+        text: "What can happen if the data is not linearly separable?",
+        answers: ["The perceptron may not converge.", "It always reaches 100% accuracy.", "It becomes K-Means.", "It does not need a bias."],
+        correct: 0,
+        explanation: "Perceptron 收斂需要資料 linearly separable。"
+      },
+      {
+        text: "What kind of learning problem is the perceptron usually used for?",
+        answers: ["Supervised binary classification.", "Unsupervised clustering.", "One-hot encoding.", "Histogram plotting."],
+        correct: 0,
+        explanation: "Perceptron 需要 labels，通常用於 binary classification。"
+      }
+    ];
+
+    finalQuestionOverrides.forEach((override, index) => {
+      Object.assign(questions[index + 30], override);
+    });
+
+    Object.assign(questions[42], {
+      text: "Which of the following statements about clustering is true?",
+      answers: [
+        "The correct number of clusters is an important parameter for the stability of the clustering solution.",
+        "Clustering Algorithms require labels for training.",
+        "K-Means Clustering finds cluster centers such that the distance between the cluster centers is minimized."
+      ],
+      correct: [0],
+      explanation: "Clustering 不需要 labels。K-Means 最小化的是資料點到各自 cluster center 的距離，不是 cluster centers 彼此之間的距離。"
+    });
+
+    Object.assign(questions[43], {
+      text: "Which of the following statements are true?",
+      answers: [
+        "Supervised learning as well as unsupervised learning algorithms require a target variable in the training data.",
+        "Only supervised learning algorithms require cross-validation for model evaluation and model selection.",
+        "Unsupervised learning algorithms can help to find structure in data. How good a solution of such an algorithm is, can be assessed by evaluating how well data can be reconstructed from the structure found."
+      ],
+      correct: [1, 2],
+      explanation: "Unsupervised learning 不需要 target variable。第 2 個和第 3 個是這題要選的重點：監督式學習常用 cross-validation 做評估/選模；非監督式學習可用資料重建品質等方式評估結構。"
+    });
+
+    questions.splice(44, 6);
+
+    const state = {
+      mode: "all",
+      selectedTopic: "all",
+      queue: [],
+      index: 0,
+      correct: 0,
+      answered: 0,
+      selectedAnswer: null,
+      missed: []
+    };
+
+    const el = {
+      topicList: document.getElementById("topicList"),
+      pageTitle: document.getElementById("pageTitle"),
+      pageSubtitle: document.getElementById("pageSubtitle"),
+      scoreValue: document.getElementById("scoreValue"),
+      doneCount: document.getElementById("doneCount"),
+      leftCount: document.getElementById("leftCount"),
+      missedCount: document.getElementById("missedCount"),
+      progressText: document.getElementById("progressText"),
+      topicTag: document.getElementById("topicTag"),
+      questionText: document.getElementById("questionText"),
+      questionCode: document.getElementById("questionCode"),
+      answers: document.getElementById("answers"),
+      feedback: document.getElementById("feedback"),
+      nextBtn: document.getElementById("nextBtn"),
+      restartBtn: document.getElementById("restartBtn"),
+      noteTitle: document.getElementById("noteTitle"),
+      noteList: document.getElementById("noteList"),
+      missedList: document.getElementById("missedList")
+    };
+
+    function shuffle(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function topicById(id) {
+      return topics.find(topic => topic.id === id);
+    }
+
+    function buildTopicButtons() {
+      el.topicList.innerHTML = "";
+
+      const allButton = document.createElement("button");
+      allButton.className = "topic-btn active";
+      allButton.dataset.topic = "all";
+      allButton.innerHTML = `<span class="topic-name">全部週次</span><span class="topic-meta">${questions.length} 題混合練習</span>`;
+      el.topicList.appendChild(allButton);
+
+      topics.forEach(topic => {
+        const count = questions.filter(question => question.topic === topic.id).length;
+        const button = document.createElement("button");
+        button.className = `topic-btn${topic.priority ? " priority" : ""}`;
+        button.dataset.topic = topic.id;
+        button.innerHTML = `<span class="topic-name">${topic.name}</span><span class="topic-meta">${topic.week} · ${count} 題</span>`;
+        el.topicList.appendChild(button);
+      });
+    }
+
+    function getQuestionPool() {
+      if (state.mode === "missed") {
+        return state.missed.length ? state.missed.map(item => item.question) : questions.filter(q => q.topic === "cluster" || q.topic === "perceptron");
+      }
+
+      if (state.selectedTopic !== "all") {
+        return questions.filter(question => question.topic === state.selectedTopic);
+      }
+
+      if (state.mode === "priority") {
+        return questions.filter(question => topicById(question.topic).priority);
+      }
+
+      return questions;
+    }
+
+    function resetPractice() {
+      state.queue = shuffle(getQuestionPool());
+      state.index = 0;
+      state.correct = 0;
+      state.answered = 0;
+      state.selectedAnswer = null;
+      render();
+    }
+
+    function updateHeader() {
+      const activeTopic = state.selectedTopic === "all" ? null : topicById(state.selectedTopic);
+      const modeLabel = {
+        all: "全部混合練習",
+        priority: "考前重點練習",
+        missed: "錯題重刷"
+      }[state.mode];
+
+      el.pageTitle.textContent = activeTopic ? activeTopic.name : modeLabel;
+      el.pageSubtitle.textContent = activeTopic
+        ? `${activeTopic.week} 的 Quiz 考點。先看右側速記，再直接刷題。`
+        : state.mode === "priority"
+          ? "集中練 Clustering、Perceptron、NCC。這三區最值得考前優先刷。"
+          : state.mode === "missed"
+            ? "只重刷剛才答錯的題目。如果目前沒有錯題，會先給你考前重點題。"
+            : "照 Quiz 考點刷題，答錯會自動加入錯題回顧。先把 Clustering、Perceptron、NCC 練熟，分數會上得很快。";
+    }
+
+    function updateButtons() {
+      document.querySelectorAll(".mode-btn").forEach(button => {
+        button.classList.toggle("active", button.dataset.mode === state.mode);
+      });
+
+      document.querySelectorAll(".topic-btn").forEach(button => {
+        button.classList.toggle("active", button.dataset.topic === state.selectedTopic);
+      });
+    }
+
+    function renderNotes(topicId) {
+      const topic = topicById(topicId) || topics.find(t => t.id === "cluster");
+      el.noteTitle.textContent = `${topic.name} 速記`;
+      el.noteList.innerHTML = topic.notes.map(note => `<li>${note}</li>`).join("");
+    }
+
+    function renderMissed() {
+      el.missedCount.textContent = state.missed.length;
+      if (!state.missed.length) {
+        el.missedList.innerHTML = '<p class="empty">目前沒有錯題。答錯後會出現在這裡。</p>';
+        return;
+      }
+
+      el.missedList.innerHTML = state.missed.slice(-5).reverse().map(item => {
+        const topic = topicById(item.question.topic);
+        return `<div class="missed-item"><strong>${topic.name}</strong><br>${item.question.text}</div>`;
+      }).join("");
+    }
+
+    function renderQuestion() {
+      if (!state.queue.length) {
+        el.progressText.textContent = "沒有題目";
+        el.topicTag.textContent = "Practice";
+        el.questionText.textContent = "目前沒有可刷的題目。請選擇其他模式或重新開始。";
+        el.questionCode.style.display = "none";
+        el.answers.innerHTML = "";
+        el.feedback.className = "feedback";
+        el.feedback.textContent = "";
+        el.nextBtn.disabled = true;
+        return;
+      }
+
+      const question = state.queue[state.index];
+      const topic = topicById(question.topic);
+      el.progressText.textContent = `題目 ${state.index + 1} / ${state.queue.length}`;
+      el.topicTag.textContent = topic.name;
+      el.questionText.textContent = question.text;
+      el.questionCode.textContent = question.code || "";
+      el.questionCode.style.display = question.code ? "block" : "none";
+      el.answers.innerHTML = "";
+      el.feedback.className = "feedback";
+      el.feedback.textContent = "";
+      el.nextBtn.disabled = true;
+      el.nextBtn.textContent = "下一題";
+      state.selectedAnswer = null;
+
+      question.answers.forEach((answer, answerIndex) => {
+        const button = document.createElement("button");
+        button.className = "answer-btn";
+        button.textContent = answer;
+        button.addEventListener("click", () => answerQuestion(answerIndex));
+        el.answers.appendChild(button);
+      });
+
+      renderNotes(question.topic);
+    }
+
+    function correctAnswers(question) {
+      return Array.isArray(question.correct) ? question.correct : [question.correct];
+    }
+
+    function isMultiAnswer(question) {
+      return correctAnswers(question).length > 1;
+    }
+
+    function renderStats() {
+      el.scoreValue.textContent = `${state.correct}/${state.answered}`;
+      el.doneCount.textContent = state.answered;
+      el.leftCount.textContent = Math.max(state.queue.length - state.index - (state.selectedAnswer === null ? 0 : 1), 0);
+      renderMissed();
+    }
+
+    function render() {
+      updateHeader();
+      updateButtons();
+      renderQuestion();
+      renderStats();
+    }
+
+    function answerQuestion(answerIndex) {
+      const question = state.queue[state.index];
+      if (state.selectedAnswer !== null && !Array.isArray(state.selectedAnswer)) return;
+
+      if (isMultiAnswer(question)) {
+        if (state.selectedAnswer === null) state.selectedAnswer = [];
+        const selected = state.selectedAnswer;
+        const existing = selected.indexOf(answerIndex);
+        if (existing >= 0) {
+          selected.splice(existing, 1);
+        } else {
+          selected.push(answerIndex);
+        }
+        [...el.answers.children].forEach((button, index) => {
+          button.classList.toggle("selected", selected.includes(index));
+        });
+        el.nextBtn.disabled = selected.length === 0;
+        el.nextBtn.textContent = "確認答案";
+        renderStats();
+        return;
+      }
+
+      submitAnswer([answerIndex]);
+    }
+
+    function sameAnswerSet(selected, correct) {
+      return selected.length === correct.length && selected.every(index => correct.includes(index));
+    }
+
+    function submitAnswer(selectedIndexes) {
+      const question = state.queue[state.index];
+      const correct = correctAnswers(question);
+      const isCorrect = sameAnswerSet([...selectedIndexes].sort(), [...correct].sort());
+      state.selectedAnswer = selectedIndexes;
+      state.answered += 1;
+      if (isCorrect) {
+        state.correct += 1;
+      } else if (!state.missed.some(item => item.question.text === question.text)) {
+        state.missed.push({ question });
+      }
+
+      [...el.answers.children].forEach((button, index) => {
+        button.disabled = true;
+        button.classList.remove("selected");
+        if (correct.includes(index)) button.classList.add("correct");
+        if (selectedIndexes.includes(index) && !correct.includes(index)) button.classList.add("wrong");
+      });
+
+      el.feedback.className = `feedback show ${isCorrect ? "good" : "bad"}`;
+      el.feedback.textContent = `${isCorrect ? "答對。" : "答錯。"} ${question.explanation}`;
+      el.nextBtn.disabled = false;
+      el.nextBtn.textContent = state.index === state.queue.length - 1 ? "完成並重刷" : "下一題";
+      renderStats();
+    }
+
+    function nextQuestion() {
+      if (state.selectedAnswer === null) return;
+      const question = state.queue[state.index];
+      if (Array.isArray(state.selectedAnswer) && isMultiAnswer(question) && el.nextBtn.textContent === "確認答案") {
+        submitAnswer(state.selectedAnswer);
+        return;
+      }
+      if (state.index === state.queue.length - 1) {
+        resetPractice();
+        return;
+      }
+
+      state.index += 1;
+      renderQuestion();
+      renderStats();
+    }
+
+    document.querySelectorAll(".mode-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        state.mode = button.dataset.mode;
+        state.selectedTopic = "all";
+        resetPractice();
+      });
+    });
+
+    el.topicList.addEventListener("click", event => {
+      const button = event.target.closest(".topic-btn");
+      if (!button) return;
+      state.selectedTopic = button.dataset.topic;
+      state.mode = "all";
+      resetPractice();
+    });
+
+    el.nextBtn.addEventListener("click", nextQuestion);
+    el.restartBtn.addEventListener("click", resetPractice);
+
+    buildTopicButtons();
+    resetPractice();
+  </script>
+</body>
+</html>
