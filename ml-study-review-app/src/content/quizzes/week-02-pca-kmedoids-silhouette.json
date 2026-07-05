@@ -1,0 +1,31 @@
+[
+  {
+    "id": "q-week02-1",
+    "type": "single",
+    "prompt": "PCA 的第一主成分通常被選為哪個方向？",
+    "choices": ["資料投影後變異量最大的方向", "資料平均值最大的方向", "類別分得最開的方向", "缺失值最少的方向"],
+    "answer": "資料投影後變異量最大的方向",
+    "explanation": "PCA 是非監督降維，核心是最大化投影變異量，不需要類別標籤。",
+    "chapterSlug": "week-02-pca-k-medoids-silhouette",
+    "tag": "PCA"
+  },
+  {
+    "id": "q-week02-2",
+    "type": "single",
+    "prompt": "K-Medoids 比 K-Means 更能抵抗離群值，主要因為：",
+    "choices": ["它不使用距離", "它的中心必須是真實資料點", "它不需要指定 K", "它只能處理一維資料"],
+    "answer": "它的中心必須是真實資料點",
+    "explanation": "Medoid 是群內代表性資料點，不會像平均值一樣被極端值大幅拉動。",
+    "chapterSlug": "week-02-pca-k-medoids-silhouette",
+    "tag": "K-Medoids"
+  },
+  {
+    "id": "q-week02-3",
+    "type": "short",
+    "prompt": "Silhouette score 接近 -1 代表什麼？",
+    "answer": "樣本可能更接近其他群，代表可能被分錯群。",
+    "explanation": "Silhouette 低於 0 通常表示該點與最近其他群比與自己群更相似。",
+    "chapterSlug": "week-02-pca-k-medoids-silhouette",
+    "tag": "Silhouette"
+  }
+]

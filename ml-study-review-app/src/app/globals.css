@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fbfaf8;
+  --foreground: #1c1917;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-noto-sans-tc);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-noto-sans-tc), system-ui, sans-serif;
+}
+
+button,
+a,
+textarea,
+input {
+  font: inherit;
+}
+
+.study-prose {
+  color: #292524;
+}
+
+.study-prose h2 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.study-prose h3 {
+  margin-top: 2rem;
+  font-size: 1.35rem;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.study-prose p,
+.study-prose li {
+  font-size: 1.05rem;
+  line-height: 2;
+  color: #57534e;
+}
+
+.study-prose ul,
+.study-prose ol {
+  margin-top: 1rem;
+  padding-left: 1.25rem;
+}
+
+.study-prose blockquote {
+  margin: 1.5rem 0;
+  border-left: 4px solid #b91c1c;
+  background: #fef2f2;
+  padding: 1rem;
+  color: #7f1d1d;
+}
+
+.study-prose blockquote p {
+  color: #7f1d1d;
+}

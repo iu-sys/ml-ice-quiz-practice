@@ -1,0 +1,31 @@
+[
+  {
+    "id": "q-kmeans-1",
+    "type": "single",
+    "prompt": "K-Means 在 update step 中如何更新中心？",
+    "choices": ["選出距離總和最小的實際資料點", "取該群所有資料點的平均值", "取該群資料點的中位數", "隨機重新抽一個中心"],
+    "answer": "取該群所有資料點的平均值",
+    "explanation": "K-Means 的 centroid 是平均值；選實際資料點作中心是 K-Medoids 的特徵。",
+    "chapterSlug": "week-01-k-means",
+    "tag": "演算法"
+  },
+  {
+    "id": "q-kmeans-2",
+    "type": "short",
+    "prompt": "用一句話說明為什麼 K-Means 通常要先做標準化。",
+    "answer": "距離會被尺度大的特徵主導，標準化能讓各特徵在距離計算中較公平。",
+    "explanation": "只要答案提到距離與尺度主導，就抓到核心。",
+    "chapterSlug": "week-01-k-means",
+    "tag": "考試陷阱"
+  },
+  {
+    "id": "q-kmeans-3",
+    "type": "single",
+    "prompt": "下列哪一項最適合描述 K-Means 的收斂結果？",
+    "choices": ["一定找到全域最佳解", "可能收斂到局部最佳，受初始化影響", "不會收斂", "不需要指定 K"],
+    "answer": "可能收斂到局部最佳，受初始化影響",
+    "explanation": "K-Means 每步會降低或維持 SSE，但初始中心不同會導致不同局部解。",
+    "chapterSlug": "week-01-k-means",
+    "tag": "核心概念"
+  }
+]
