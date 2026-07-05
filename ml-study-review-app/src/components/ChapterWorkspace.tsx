@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Clock, Target } from "lucide-react";
 import { getChapterQuiz } from "@/data/course";
 import type { Chapter, ChapterMode } from "@/data/types";
@@ -12,15 +13,18 @@ import { ProgressControls } from "./ProgressControls";
 import { QuizRunner } from "./QuizRunner";
 import { ReviewCards } from "./ReviewCards";
 
+const modes: ChapterMode[] = ["learn", "review", "exam", "quiz"];
+
 export function ChapterWorkspace({
   chapter,
-  mode,
   children,
 }: {
   chapter: Chapter;
-  mode: ChapterMode;
   children: React.ReactNode;
 }) {
+  const searchParams = useSearchParams();
+  const queryMode = searchParams.get("mode");
+  const mode = modes.includes(queryMode as ChapterMode) ? (queryMode as ChapterMode) : "learn";
   const { setLastMode } = useStudyProgress();
   const quiz = getChapterQuiz(chapter.slug);
 

@@ -1,12 +1,10 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { ChapterWorkspace } from "@/components/ChapterWorkspace";
 import { chapters, getChapter } from "@/data/course";
-import type { ChapterMode } from "@/data/types";
-
-const modes: ChapterMode[] = ["learn", "review", "exam", "quiz"];
 
 const noteFiles: Record<string, string> = {
   "week-01-k-means": "week-01-k-means.mdx",
@@ -19,25 +17,23 @@ export function generateStaticParams() {
 
 export default async function ChapterPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ mode?: string }>;
 }) {
   const { slug } = await params;
-  const query = await searchParams;
   const chapter = getChapter(slug);
   if (!chapter) notFound();
 
-  const mode = modes.includes(query.mode as ChapterMode) ? (query.mode as ChapterMode) : "learn";
   const notePath = path.join(process.cwd(), "src", "content", "notes", noteFiles[slug]);
   const noteSource = await readFile(notePath, "utf8");
 
   return (
     <AppShell>
-      <ChapterWorkspace chapter={chapter} mode={mode}>
-        <MdxNote source={noteSource} />
-      </ChapterWorkspace>
+      <Suspense fallback={<div className="rounded-lg border border-stone-200 bg-white p-6">Loading chapter...</div>}>
+        <ChapterWorkspace chapter={chapter}>
+          <MdxNote source={noteSource} />
+        </ChapterWorkspace>
+      </Suspense>
     </AppShell>
   );
 }
